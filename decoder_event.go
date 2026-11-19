@@ -420,8 +420,8 @@ func (p *Decoder) parseMetaMsg(e *Event) (nextChunkType, bool, error) {
 				return eventChunk, false, fmt.Errorf("time Signature length not 2 as expected but %d", len(msgBytes))
 			}
 
-			// key
-			e.Key = int32(msgBytes[0])
+			// key (signed: negative values specify flats)
+			e.Key = int32(int8(msgBytes[0]))
 			// scale
 			e.Scale = uint32(msgBytes[1])
 

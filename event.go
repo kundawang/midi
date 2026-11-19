@@ -415,6 +415,18 @@ func (e *Event) Encode() ([]byte, error) {
 			if err := buff.WriteByte(0x0); err != nil {
 				return buff.Bytes(), err
 			}
+		// Key signature: FF 59 02 sf mi
+		// sf: sharps (positive) or flats (negative), mi: 0 = major, 1 = minor
+		case 0x59:
+			if err := binary.Write(buff, binary.BigEndian, EncodeVarint(2)); err != nil {
+				return buff.Bytes(), err
+			}
+			if err := buff.WriteByte(byte(int8(e.Key))); err != nil {
+				return buff.Bytes(), err
+			}
+			if err := buff.WriteByte(byte(e.Scale)); err != nil {
+				return buff.Bytes(), err
+			}
 		}
 	default:
 		return buff.Bytes(), fmt.Errorf("didn't encode %#v because didn't know how to", e)
@@ -447,6 +459,8 @@ func (e *Event) Size() uint32 {
 			return uint32(len(name) + len(varintBytes))
 		case 0x51: // tempo
 			return 4
+		case 0x59: // key signature (length byte + 2 data bytes)
+			return 3
 		case 0x2f: // end of track
 			return 1
 		default:
